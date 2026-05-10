@@ -194,7 +194,7 @@
       "аура снежинка":"aura13"
     };
     let se=localStorage.getItem(KS)!=="0",sv=(parseInt(localStorage.getItem(KV)||"70",10)||70)/100,st=localStorage.getItem(KY)||"crystal",ns=Math.max(20,Math.min(120,parseInt(localStorage.getItem(KN)||"60",10)||60));
-    let stt=null,an="",au=null,sd=new Set();
+    let stt=null,an="",au=null,sd=new Set(),serverSkew=0;
     function iu(n){return new URL("imgs/"+n+".png",location.href).toString();}
     function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
     function rc(r){return r==="secret"?"s":r==="mythic"?"m":r==="legendary"?"l":"u";}
@@ -251,7 +251,7 @@
       h.forEach(r=>{
         const d=document.createElement("div");d.className="hi";
         const e=r.ended_ts?" → "+fc(r.ended_ts):"";
-        d.innerHTML="<span>"+esc(r.label||r.id||"")+"</span><span>"+fc(r.since_ts)+e+"</span>";
+        d.innerHTML="<span>"+esc(r.label||r.id||"")+"</span><span>С "+fc(r.since_ts)+e+"</span>";
         L.appendChild(d);
       });
       document.getElementById("m2").classList.add("v");
@@ -318,7 +318,7 @@
         im.appendChild(x);
       });
       const c=stt?.current_event;
-      if(c&&c.label){nw.innerHTML="<b>"+esc(c.label)+"</b><span class=\"muted\">"+fc(c.since_ts)+"</span>";}
+      if(c&&c.label){nw.innerHTML="<b>"+esc(c.label)+"</b><span class=\"muted\" id=\"evcnt\">—</span>";}
       else{nw.innerHTML='<span class="muted">Нет активного</span>';}
     }
     function rdrp(){
@@ -364,7 +364,15 @@
     }
     function tk(){
       if(!stt)return;
-      const nw=Date.now()/1000,r=stt.next_restart_msk_ts;
+      const nw=Date.now()/1000+serverSkew,r=stt.next_restart_msk_ts;
+      const evEl=document.getElementById("evcnt");
+      const ce=stt?.current_event;
+      if(evEl){
+        if(ce&&typeof ce.until_ts==="number"){
+          const rem=Math.max(0,Math.ceil(ce.until_ts-nw));
+          evEl.textContent=rem<=0?"конец":("осталось "+fd(rem));
+        }else{evEl.textContent="";}
+      }
       if(r)document.getElementById("rs").textContent=fd(r-nw);
       (stt.dungeons||[]).forEach(d=>{
         const L=document.getElementById("cdl-"+d.key),R=document.getElementById("cdr-"+d.key);if(!L||!R)return;
@@ -387,6 +395,7 @@
         if(r.status===403){document.getElementById("blk").classList.add("on");document.getElementById("root").classList.remove("on");document.getElementById("sd").className="dot err";document.getElementById("st").textContent="403";return;}
         if(!r.ok)throw new Error(String(r.status));
         stt=await r.json();
+        serverSkew=(typeof stt.server_time==="number"?stt.server_time:0)-Date.now()/1000;
         document.getElementById("blk").classList.remove("on");document.getElementById("root").classList.add("on");
         if(typeof stt.notify_seconds==="number"){ns=Math.max(20,Math.min(120,Math.floor(stt.notify_seconds)));document.getElementById("nt").value=ns;document.getElementById("ntl").textContent=String(ns);localStorage.setItem(KN,String(ns));}
         rtabs();rdgs();rev();rdrp();tk();
