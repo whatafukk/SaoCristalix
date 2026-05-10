@@ -66,12 +66,17 @@
     .drp{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--line);align-items:flex-start}
     .drp:last-child{border-bottom:0;padding-bottom:0}
     .drp:first-child{padding-top:0}
+    .ri{width:20px;height:20px;border-radius:6px;object-fit:cover;flex-shrink:0;border:1px solid var(--line);background:#0b0d11}
     .drp-main{flex:1;min-width:0}
     .dx{border:1px solid var(--line);background:#0c0e12;color:#f87171;border-radius:7px;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;line-height:1;cursor:pointer;flex-shrink:0;margin-top:1px}
     .dx:hover{background:rgba(248,113,113,0.08);border-color:rgba(248,113,113,0.45)}
     .rd{width:6px;height:6px;border-radius:50%;margin-top:5px;flex-shrink:0}
     .rd.s{background:var(--s)}.rd.m{background:var(--m)}.rd.l{background:var(--l)}.rd.u{background:#64748b}
     .dn{font-weight:700;font-size:12px;line-height:1.25}
+    .dn.r-s{color:var(--s)}
+    .dn.r-m{color:var(--m)}
+    .dn.r-l{color:var(--l)}
+    .dn.r-u{color:var(--fg)}
     .dm{font-size:10px;color:var(--dim);margin-top:2px;font-variant-numeric:tabular-nums}
     .foot{display:flex;gap:6px;margin-top:8px}
     .btn{flex:1;border:1px solid var(--line);background:var(--card);color:var(--fg);padding:8px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer}
@@ -174,11 +179,32 @@
     };
     const SO=[["crystal","Кристалл"],["forest","Лес"],["pulse","Пульс"],["chime","Колокол"],["harp","Арфа"],["water","Капли"],["bell","Колокол 2"],["glass","Стекло"],["soft","Тихо"],["piano","Пиано"]];
     const ADMIN_UID=7147977803;
+    const AURA_ICONS={
+      "legendary|аура вампиризма":"aura1",
+      "mythic|аура вампиризма":"aura14",
+      "огненная аура":"aura2",
+      "водная аура":"aura3",
+      "природная аура":"aura4",
+      "аура вуду":"aura5",
+      "аура тыковка":"aura6",
+      "научная аура":"aura7",
+      "аура сознания":"aura8",
+      "мечущая аура":"aura9",
+      "аура смирения":"aura10",
+      "аура костей":"aura11",
+      "космическая аура":"aura12",
+      "аура снежинка":"aura13"
+    };
     let se=localStorage.getItem(KS)!=="0",sv=(parseInt(localStorage.getItem(KV)||"70",10)||70)/100,st=localStorage.getItem(KY)||"crystal",ns=Math.max(20,Math.min(120,parseInt(localStorage.getItem(KN)||"60",10)||60));
     let stt=null,an="",au=null,sd=new Set();
     function iu(n){return new URL("imgs/"+n+".png",location.href).toString();}
     function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
     function rc(r){return r==="secret"?"s":r==="mythic"?"m":r==="legendary"?"l":"u";}
+    function auraIcon(item,rarity){
+      const k=String(item||"").trim().toLowerCase();
+      const rk=String(rarity||"").trim().toLowerCase();
+      return AURA_ICONS[rk+"|"+k]||AURA_ICONS[k]||"";
+    }
     function rl(r){return r==="secret"?"Секрет":r==="mythic"?"Миф":r==="legendary"?"Лега":"?";}
     function kl(k){return({pet:"Пет",relic:"Релик",weapon:"Оруж",aura:"Аура",unknown:"?"})[k]||"?";}
     function fd(s){s=Math.max(0,Math.floor(s));const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),x=s%60;return h?h+"ч"+String(m).padStart(2,"0")+"м":m?m+"м"+String(x).padStart(2,"0")+"с":x+"с";}
@@ -305,7 +331,9 @@
       if(!a.length){h.innerHTML='<span class="muted">Пусто</span>';return;}
       a.forEach(d=>{
         const e=document.createElement("div");e.className="drp";
-        e.innerHTML='<div class="rd '+rc(d.rarity)+'"></div><div class="drp-main"><div class="dn">'+esc(d.item||"")+'</div><div class="dm">'+rl(d.rarity)+" · "+kl(d.kind)+" · "+fc(d.ts)+"</div></div>";
+        const rr=rc(d.rarity),ico=d.kind==="aura"?auraIcon(d.item,d.rarity):"";
+        const left=ico?'<img class="ri" alt="" src="'+iu(ico)+'" />':'<div class="rd '+rr+'"></div>';
+        e.innerHTML=left+'<div class="drp-main"><div class="dn r-'+rr+'">'+esc(d.item||"")+'</div><div class="dm">'+rl(d.rarity)+" · "+kl(d.kind)+" · "+fc(d.ts)+"</div></div>";
         if(canDel){
           const b=document.createElement("button");
           b.type="button";
